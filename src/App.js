@@ -7,35 +7,8 @@ export default function App() {
 
   const [currentAccount, setCurrentAccount] = useState("");
   const [allWaves, setAllWaves] = useState([]);
-  const contractAddress = "0x84e55568f5ac815F190561b1fa431B8EA1c9B31D";
+  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const contractABI = abi.abi;
-
-  const getAllWaves = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-
-        const waves = wavePortalContract.getAllWaves();
-
-        let wavesCleaned = [];
-        waves.forEach(wave => {
-          wavesCleaned.push({
-            address: wave.waver,
-            timestamp: new Date(wave.timestamp * 1000),
-            message: wave.message
-          });
-        });
-        setAllWaves(wavesCleaned)
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -53,7 +26,6 @@ export default function App() {
         const account = accounts[0];
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
-        getAllWaves();
       } else {
         console.log("No authorized account found");
       }      
@@ -99,10 +71,8 @@ export default function App() {
 
         const waveTxn = await wavePortalContract.wave("this is a message")
         console.log("Mining...", waveTxn.hash);
-
         await waveTxn.wait();
         console.log("Mined -- ", waveTxn.hash);
-
         count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
       } else {
@@ -110,6 +80,32 @@ export default function App() {
       }
     } catch (error) {
       console.log(error);
+    }
+
+    const getAllWaves = async () => {
+      try {
+        const { ethereum } = window;
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+          const waves = wavePortalContract.getAllWaves();
+  
+          let wavesCleaned = [];
+          waves.forEach(wave => {
+            wavesCleaned.push({
+              address: wave.waver,
+              timestamp: new Date(wave.timestamp * 1000),
+              message: wave.message
+            });
+          });
+          setAllWaves(wavesCleaned)
+        } else {
+          console.log("Ethereum object doesn't exist!");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
 
   }
